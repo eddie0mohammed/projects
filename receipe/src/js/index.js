@@ -10,6 +10,7 @@ import * as recipeView from './views/recipeView';
 import List from './models/List';
 import * as listView from './views/listView';
 import Likes from './models/Likes';
+import * as likesView from './views/likesView';
 
 /*
 Global State of the app
@@ -20,7 +21,7 @@ Global State of the app
 */
 
 const state = {};
-window.state = state;
+// window.state = state;
 
 //SEARCH CONTROLLER
 const controlSearch = async () => {
@@ -105,7 +106,10 @@ const controlRecipe = async () => {
     
             // render recipe
             clearLoader();
-            recipeView.renderRecipe(state.recipe);
+            recipeView.renderRecipe(
+                state.recipe,
+                state.likes.isLiked(id)
+                );
         }catch (err){
             console.log('Error processing recipe', err);
             alert(err);
@@ -145,6 +149,11 @@ elements.shopping.addEventListener('click', e => {
 });
 
 // LIKE CONTROLLER
+//testing
+// state.likes = new Likes();
+// likesView.toggleLikesMenu(state.likes.getNumLikes());
+
+
 const controlLike = () => {
     if (!state.likes)
         state.likes = new Likes();
@@ -160,22 +169,37 @@ const controlLike = () => {
             state.recipe.img
         );
         //toggle the like button
+        likesView.toggleLikeBtn(true);
 
         //add like to UI list
-        console.log(state.likes);
+        likesView.renderLike(newLike);
+        // console.log(state.likes);
 
     //user has liked current recipe
     }else{
         //remove like from state
         state.likes.deleteLike(currentID);
         //toggle the like button
+        likesView.toggleLikeBtn(false);
+
 
         //remove the like from UI list
-        console.log(state.likes);
-
+        likesView.deleteLike(currentID);
+        // console.log(state.likes);
     }
+    likesView.toggleLikesMenu(state.likes.getNumLikes());
 }
 
+//restore liked recipes on page load
+window.addEventListener('load', () => {
+    state.likes = new Likes();
+    //restore likes from local storage
+    state.likes.readStorage();
+    //toggle like menu button
+    likesView.toggleLikesMenu(state.likes.getNumLikes());
+    //render the existing likes
+    state.likes.likes.forEach(like => likesView.renderLike(like));
+});
 
 
 //event listener for hashchange for recipe
